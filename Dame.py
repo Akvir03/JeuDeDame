@@ -568,6 +568,71 @@ def affichage_possible(case,damier,depart,affiche):
     if affiche==True:
         dessin_piece()
 
+def valuation_jeu(damier, blanc : bool):
+    """permet de remplir un tableau test avec le poids de chaque case, et de calculer la valeur d'une partie
+
+    Args:
+        damier (ndarray): le damier à évaluer
+        blanc (bool): True si le joueur est blanc
+
+    Returns:
+        int: la valeur du damier
+    """
+    valuation=0
+    tableau_test=zeros((nb_cases,nb_cases),dtype=int)
+    if blanc:
+        val=-1 
+        joueur ="B"
+        opposant="N"
+        en_tete=11
+    else :
+        val=1
+        joueur="N"
+        opposant="B"
+        en_tete=0
+    for i in range(1,nb_cases):
+        for j in range(1,nb_cases):
+            #on va parcourir le damier et donner une évaluation à chaque pièce
+            if damier[i,j][1]==joueur:#pion allié
+                if j==en_tete+val:
+                    valuation=valuation + 5
+                    tableau_test[i,j]=5
+                    #5 points aux éléments de la première ligne à protéger
+                else :
+                    valuation=valuation + en_tete+val*j
+                    tableau_test[i,j]=en_tete+val*j
+                #les pions ont la valeur de leur ligne
+                    if i==1 or i==10:
+                        #case des coins, on double leur poids
+                        valuation=valuation + en_tete+val*j
+                        tableau_test[i,j]=2*(en_tete+val*j)
+            elif damier[i,j]=="D"+joueur:#alliée toujours
+                valuation=valuation+20
+                tableau_test[i,j]=20
+            elif damier[i,j][1]==opposant:
+                if j==11-(en_tete+val):
+                    #première ligne ennemie
+                    valuation=valuation - 5
+                    tableau_test[i,j]=-5
+                    #-5 points aux éléments de la première ligne à protéger des ennemis
+                else :
+                    #ligne quelconque ennemie
+                    valuation=valuation -(11-(en_tete+val*j))
+                    tableau_test[i,j]=-(11-(en_tete+val*j))
+                #les pions ont la valeur de leur ligne en négatif
+                    if i==1 or i==10:
+                    #case des coins, on double leur poids
+                        valuation=valuation -(11-(en_tete+val*j))
+                        tableau_test[i,j]=-2*(11-(en_tete+val*j))
+            elif damier[i,j]=="D"+opposant:
+                valuation=valuation-20
+                tableau_test[i,j]=-20
+            else :
+                pass
+    #print(tableau_test)
+    return valuation
+
+
 #le clic gauche entraine une action sur le tableau visible
 def clicGauche(event) :
     """on gère le jeu dès qu'il y a un clic
